@@ -1,5 +1,6 @@
 import requests
 import datetime
+from pprint import pprint
 from config import weather_token, bot_token
 from aiogram import Bot, types, Dispatcher, executor
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
@@ -16,7 +17,7 @@ async def start_command(message: types.Message):
     start_menu = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_developer, btn_settings)
     await bot.send_message(message.from_user.id, "Привет, {0.first_name}! \U0001F60E "
                                                  "\nДля того чтобы узнать сводку погоды в конкретном городе - напиши название города в этот чат."
-                                                 "\nТак-же, для удобства, можете написать названия трёх городов через запятую и я добавлю их в быстрый доступ! "
+                                                 "\nТак-же, для удобства, можете написать названия городов через запятую и я добавлю их в быстрый доступ! "
                                                  "\U0001F642".format(message.from_user), reply_markup=start_menu)
 
 
@@ -25,23 +26,22 @@ async def start_command(message: types.Message):
 async def choose_city(message: types.Message):
     if ',' in message.text:
         city_for_choose = message.text
-        lst = city_for_choose.replace(',', ' ').split()
-
-        # ---- Menu settings ----
-        btn_city1 = KeyboardButton(f'{lst[0]}')
-        btn_city2 = KeyboardButton(f'{lst[1]}')
-        btn_city3 = KeyboardButton(f'{lst[2]}')
+        lst = list(set(city_for_choose.lower().replace(',', ' ').split()))
+        lst = [i.capitalize() for i in lst]
         btn_developer = KeyboardButton('Developer?')
         btn_settings = KeyboardButton(f'How to use \U0001F6E0')
-        main_menu = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_city1, btn_city2, btn_city3, btn_developer,  btn_settings)
-
-        await bot.send_message(message.from_user.id, "Успешно добавили города! :)", reply_markup=main_menu)
+        main_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+        # ---- Menu settings ----
+        for i in lst:
+            btn_cites = KeyboardButton(f'{i}')
+            main_menu.add(btn_cites)
+        await bot.send_message(message.from_user.id, "Успешно добавили города! :)", reply_markup=main_menu.add(btn_developer, btn_settings))
 
     elif 'How to use \U0001F6E0' in message.text:
         await message.reply("\U0001F6E0 Чтобы узнать сводку погоды в конкретном городе - напишите название города в этот чат."
                             "\n\U0001F6E0 Для корректного отображения информации введите правильное название города."
-                            "\n\U0001F6E0 Для удобства можете написать названия трёх городов через запятую и я добавлю их в быстрый доступ!"
-                            "\n\U0001F6E0 Чтобы изменить города в меню быстрого доступа - напишите заново названия трёх городов через запятую.")
+                            "\n\U0001F6E0 Для удобства можете написать названия городов через запятую и я добавлю их в быстрый доступ!"
+                            "\n\U0001F6E0 Чтобы изменить города в меню быстрого доступа - напишите заново названия городов через запятую.")
 
     elif 'Developer?' in message.text:
         await message.reply('Разработчик бота - @nechtobolshee.\nПисать по идеям для улучшения.\n')
@@ -50,14 +50,16 @@ async def choose_city(message: types.Message):
         try:
             r = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={message.text}&appid={weather_token}&units=metric')
             data = r.json()
+            pprint(data)
             city = data['name']
+            country = data['sys']['country']
             temp = data['main']['temp']
             humidity = data['main']['humidity']
             weather = data['weather'][0]['description']
             sunset = datetime.datetime.fromtimestamp(data['sys']['sunset'])
 
             await message.reply(f'\U0001F550 {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")} \U0001F550'
-                                f'\nГород: {city}\nТемпература: {temp}°C'
+                                f'\nГород: {city}, {country}\nТемпература: {temp}°C'
                                 f'\nВлажность: {humidity}%\nПогода: {weather}\nВремя заката: {sunset}'
                                 f'\nHave a good day! \U0001F607')
 
