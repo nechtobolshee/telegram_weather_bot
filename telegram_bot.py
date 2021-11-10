@@ -1,5 +1,6 @@
 import requests
 import datetime
+import pytz
 from pprint import pprint
 from config import weather_token, bot_token
 from aiogram import Bot, types, Dispatcher, executor
@@ -73,8 +74,9 @@ async def choose_city(message: types.Message):
             humidity = data['main']['humidity']
             weather = data['weather'][0]['description']
             sunset = datetime.datetime.fromtimestamp(data['sys']['sunset'])
+            timezone = pytz.timezone('Europe/Kiev')
 
-            await message.reply(f'\U0001F550 {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")} \U0001F550'
+            await message.reply(f'\U0001F550 {datetime.datetime.now(timezone).strftime("%Y-%m-%d %H:%M")} \U0001F550'
                                 f'\nГород: {city}, {country}\nТемпература: {temp}°C'
                                 f'\nВлажность: {humidity}%\nПогода: {weather}\nВремя заката: {sunset}'
                                 f'\nHave a good day! \U0001F607')
