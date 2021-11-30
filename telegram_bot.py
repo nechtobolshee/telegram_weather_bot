@@ -65,21 +65,23 @@ async def choose_city(message: types.Message):
         await message.reply('Панель быстрого доступа очищена :)', reply_markup=main_menu.add(btn_developer, btn_settings))
     else:
         try:
-            r = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={message.text}&appid={weather_token}&units=metric')
+            r = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={message.text}&appid={weather_token}&units=metric&lang=ru')
             data = r.json()
             pprint(data)
             city = data['name']
             country = data['sys']['country']
-            temp = data['main']['temp']
+            temp = round(data['main']['temp'])
+            flike = round(data['main']['feels_like'])
             humidity = data['main']['humidity']
-            weather = data['weather'][0]['description']
-            sunset = datetime.datetime.fromtimestamp(data['sys']['sunset'])
+            wspeed = data['wind']['speed']
+            weather = data['weather'][0]['description'].capitalize()
+            # sunset = datetime.datetime.fromtimestamp(data['sys']['sunset'])
             timezone = pytz.timezone('Europe/Kiev')
 
-            await message.reply(f'\U0001F550 {datetime.datetime.now(timezone).strftime("%Y-%m-%d %H:%M")} \U0001F550'
-                                f'\nГород: {city}, {country}\nТемпература: {temp}°C'
-                                f'\nВлажность: {humidity}%\nПогода: {weather}\nВремя заката: {sunset}'
-                                f'\nHave a good day! \U0001F607')
+            await message.reply(f'\U0001F550 {datetime.datetime.now(timezone).strftime("%d-%m-%Y %H:%M")} \U0001F550'
+                                f'\nГород: {city}, {country}\n{weather}\nТемпература: {temp}°C'
+                                f'\nОщущается как: {flike}°C\nСкорость ветра: {wspeed} м/с\nВлажность: {humidity}%'
+                                f'\n\nHave a good day! \U0001F607')
 
         except:
             await message.reply("\U00002620 Проверьте правильность написания \U00002620")
