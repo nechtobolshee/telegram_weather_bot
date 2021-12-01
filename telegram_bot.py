@@ -7,25 +7,25 @@ from aiogram import Bot, types, Dispatcher, executor
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 bot = Bot(token=bot_token)
-disp = Dispatcher(bot)
+dispatch = Dispatcher(bot)
 
 
 # ---- Hello func ----
-@disp.message_handler(commands=['start'])
+@dispatch.message_handler(commands=['start'])
 async def start_command(message: types.Message):
     btn_developer = KeyboardButton('Developer?')
     btn_settings = KeyboardButton(f'How to use \U0001F6E0')
     start_menu = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_developer, btn_settings)
-    await bot.send_message(message.from_user.id, "Привет, {0.first_name}! \U0001F60E "
+    await bot.send_message(message.from_user.id, "Здравствуйте, {0.first_name}! \U0001F60E "
                                                  "\nДля того чтобы узнать сводку погоды в конкретном "
-                                                 "городе - напиши название города в этот чат."
+                                                 "городе - напишите название города в этот чат."
                                                  "\nТак-же, для удобства, можете написать названия "
                                                  "городов через запятую и я добавлю их в быстрый доступ! "
                                                  "\U0001F642".format(message.from_user), reply_markup=start_menu)
 
 
 # ---- Main func ----
-@disp.message_handler()
+@dispatch.message_handler()
 async def choose_city(message: types.Message):
 
     if ',' in message.text:
@@ -80,12 +80,12 @@ async def choose_city(message: types.Message):
 
             await message.reply(f'\U0001F550 {datetime.datetime.now(timezone).strftime("%d-%m-%Y %H:%M")} \U0001F550'
                                 f'\nГород: {city}, {country}\n{weather}\nТемпература: {temp}°C'
-                                f'\nОщущается как: {flike}°C\nСкорость ветра: {wspeed} м/с\nВлажность: {humidity}%'
-                                f'\n\nHave a good day! \U0001F607')
+                                f'\nОщущается как: {flike}°C\nСкорость ветра: {wspeed} м/с'
+                                f'\nВлажность: {humidity}%\n\nHave a good day! \U0001F607')
 
         except:
             await message.reply("\U00002620 Проверьте правильность написания \U00002620")
 
 
 if __name__ == '__main__':
-    executor.start_polling(disp, skip_updates=True)
+    executor.start_polling(dispatch, skip_updates=True)
